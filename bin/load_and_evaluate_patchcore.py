@@ -120,15 +120,15 @@ def run(methods, results_path, gpu, seed, save_segmentation_images):
                 ]
 
                 def image_transform(image):
-                    in_std = np.array(
-                        dataloaders["testing"].dataset.transform_std
-                    ).reshape(-1, 1, 1)
-                    in_mean = np.array(
-                        dataloaders["testing"].dataset.transform_mean
-                    ).reshape(-1, 1, 1)
+                    # in_std = np.array(
+                    #     dataloaders["testing"].dataset.transform_std
+                    # ).reshape(-1, 1, 1)
+                    # in_mean = np.array(
+                    #     dataloaders["testing"].dataset.transform_mean
+                    # ).reshape(-1, 1, 1)
                     image = dataloaders["testing"].dataset.transform_img(image)
                     return np.clip(
-                        (image.numpy() * in_std + in_mean) * 255, 0, 255
+                        image.numpy() * 255, 0, 255
                     ).astype(np.uint8)
 
                 def mask_transform(mask):
@@ -150,6 +150,11 @@ def run(methods, results_path, gpu, seed, save_segmentation_images):
                 scores, anomaly_labels
             )["auroc"]
 
+
+            max_accuracy = patchcore.metrics.compute_max_accuracy(
+                scores, anomaly_labels
+            )
+
             # Compute PRO score & PW Auroc for all images
             pixel_scores = patchcore.metrics.compute_pixelwise_retrieval_metrics(
                 segmentations, masks_gt
@@ -170,6 +175,8 @@ def run(methods, results_path, gpu, seed, save_segmentation_images):
                 {
                     "dataset_name": dataset_name,
                     "instance_auroc": auroc,
+                    "max_accuracy": max_accuracy[1],
+                    "max_accuracy_th": max_accuracy[0],
                     "full_pixel_auroc": full_pixel_auroc,
                     "anomaly_pixel_auroc": anomaly_pixel_auroc,
                 }

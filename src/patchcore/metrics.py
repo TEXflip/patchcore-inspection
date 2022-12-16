@@ -3,6 +3,31 @@ import numpy as np
 from sklearn import metrics
 
 
+def compute_max_accuracy(
+    anomaly_prediction_weights, anomaly_ground_truth_labels
+):
+    """
+    Computes the optimal threshold to maximize the accuracy
+    and return it
+    """
+    y_true = anomaly_ground_truth_labels
+    y_pred = anomaly_prediction_weights
+    A = list(zip(y_true, y_pred))
+    A = sorted(A, key=lambda x: x[1])
+    total = len(A)
+    tp = len([1 for x in A if x[0]==1])
+    tn = 0
+    th_acc = []
+    for x in A:
+        th = x[1]
+        if x[0] == 1:
+            tp -= 1
+        else:
+            tn += 1
+        acc = (tp + tn) / total
+        th_acc.append((th, acc))
+    return max(th_acc, key=lambda x: x[1])
+
 def compute_imagewise_retrieval_metrics(
     anomaly_prediction_weights, anomaly_ground_truth_labels
 ):
